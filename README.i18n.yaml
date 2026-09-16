@@ -6,5 +6,5 @@
 #   git hash-object README.md README.zh.md
 #
 # A hash that no longer matches the file means the pair has drifted.
-README.md: dad4dd330b9ad251f0524cf5f5a8f70277f2e1c3
-README.zh.md: 179f42cd22afa85d998266a6de1ebb2e9eed28a3
+README.md: bbccbfa340ceaee80bb10497e4e527d4a7a14852
+README.zh.md: bd5e0a3793d8f774c6b30d4bfac0ea84f941134b

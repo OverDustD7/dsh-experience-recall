@@ -59,10 +59,15 @@ session/event（思考 · 正文 · 工具参数 · 工具结果 · 报错）
 dsh plugin --profile web add dsh-experience-recall
 ```
 
-想直接从本仓库装：
+`web` 是 DSH 网页界面用的那个 profile，你若改过名字就换成自己的。这条命令会把参数转交给你的包管理器，
+所以仓库地址与本地检出处同样可以：
 
 ```sh
+# 跟这个仓库走，而不是跟 npm 发布版
 dsh plugin --profile web add github:OverDustD7/dsh-experience-recall
+
+# 开发：装你正在改的那份检出处
+dsh plugin --profile web add link:/path/to/dsh-experience-recall
 ```
 
 然后重启 `dsh web`。安装本身已经把这个包加进 profile 的 `dsh.profile.bundles`，**不要再手工加一遍**，

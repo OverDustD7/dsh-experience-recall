@@ -65,10 +65,15 @@ filtered for terms that cannot discriminate anything. New memories are picked up
 dsh plugin --profile web add dsh-experience-recall
 ```
 
-To install straight from this repository instead:
+`web` is the profile behind the DSH web UI — substitute your own profile name if you renamed it. The
+command forwards to your package manager, so it also accepts a repository or a local checkout:
 
 ```sh
+# track this repository instead of the npm release
 dsh plugin --profile web add github:OverDustD7/dsh-experience-recall
+
+# development: install the checkout you are working in
+dsh plugin --profile web add link:/path/to/dsh-experience-recall
 ```
 
 Then restart `dsh web`. Installing already adds the package to the profile's `dsh.profile.bundles` — do
