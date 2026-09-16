@@ -1,0 +1,3 @@
+# Store LF in the repository and check it out as LF everywhere, so the two READMEs
+# and the JS/YAML files stay byte-identical across platforms.
+* text=auto eol=lf

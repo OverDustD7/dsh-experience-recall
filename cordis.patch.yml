@@ -1,0 +1,58 @@
+# dsh-experience-recall bundle patch.
+#
+# This is the `dsh.bundle.patch` layer of the published package: DSH applies it
+# when the package is listed in a profile's `dsh.profile.bundles`. Installing with
+#
+#   dsh plugin --profile <name> add dsh-experience-recall
+#
+# adds it to that list for you — do NOT also hand-add the name, or the loader
+# fails with `duplicate loader entry id`.
+#
+# The row's `config` is handed to `apply(ctx, config)` and merged over
+# lib/config.js DEFAULT_CONFIG; everything below is optional. State (observation
+# log + card cache) defaults to `$DSH_HOME/dsh-experience-recall`, so nothing is
+# written inside node_modules.
+- insert:
+    - id: experience-recall
+      name: 'dsh-experience-recall'
+      config:
+        enabled: true
+
+        # ---- state --------------------------------------------------------
+        # stateDir: ''                        # default: $DSH_HOME/dsh-experience-recall
+        # logPath: ''                         # default: <stateDir>/logs/observe.ndjson
+        # logMaxBytes: 33554432
+        # cardCachePath: ''                   # explicit empty disables caching; omit for the default
+        # statsEvery: 200
+
+        # ---- retrieval (local mnemon CLI; costs no API tokens) ------------
+        # Omit mnemonCliPath to use $MNEMON_CLI_PATH; set it to '' to disable
+        # CLI retrieval only; indexed cards may still be injected.
+        # mnemonCliPath: ''
+        # mnemonDataDir: '~/.dsh/mnemon'
+        # mnemonStore: default
+        # recallLimit: 3
+        # recallTimeoutMs: 5000
+        # minScore: 0.35
+
+        # ---- relevance judge + card builder (local model) -----------------
+        # cardBuilder: local                  # 'mechanical' skips model card building; judging still runs
+        # localModel: 'qwen3.5:9b'
+        # localEndpoint: 'http://localhost:11434'
+        # verifyEnabled: true
+        # verifyTimeoutMs: 6000
+        # verifyMinIntervalMs: 1200
+        # A judgement the model never answered is retried once with a longer
+        # budget: aborting a cold load makes Ollama cancel that load, so
+        # retrying inside the same budget would livelock it (0.6.2).
+        # verifyRetryTimeoutMs: 30000         # capped at 5x verifyTimeoutMs
+        # verifyRetryLimit: 1
+        # warmupAttempts: 3
+        # warmupRetryDelayMs: 5000
+        # verifyBackoffBaseMs: 2000           # 2s, 4s, 8s ... after an unanswered judgement
+        # verifyBackoffMaxMs: 30000
+
+        # ---- injection budget --------------------------------------------
+        # maxInjectionsPerTurn: 3
+        # maxCardsPerInjection: 2
+        # maxInjectBytes: 1200

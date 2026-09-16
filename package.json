@@ -1,0 +1,64 @@
+{
+  "name": "dsh-experience-recall",
+  "version": "0.6.2",
+  "description": "Cross-project experience recall for DeepSeek Harness: when the running work matches something your memory store already learned elsewhere, that lesson is injected before the next step. Runs fully locally, judged by a local small model.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "tools/check-relevance.mjs",
+    "tools/build-cards.mjs",
+    "tools/check-install.mjs",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.5",
+    "dsh": ">=0.1.5-rc.1"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check lib/index.js && node --check lib/observer.js && node --check lib/scan.js && node --check lib/keywords.js && node --check lib/log.js && node --check lib/config.js && node --check lib/recall.js && node --check lib/controller.js && node --check lib/render.js && node --check lib/surface.js && node --check lib/terms.js && node --check lib/table.js && node --check lib/cards.js && node --check lib/mnemon-store.js && node --check lib/memory-watch.js && node --check lib/verify.js",
+    "prepack": "npm run check && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OverDustD7/dsh-experience-recall.git"
+  },
+  "homepage": "https://github.com/OverDustD7/dsh-experience-recall#readme",
+  "bugs": {
+    "url": "https://github.com/OverDustD7/dsh-experience-recall/issues"
+  },
+  "author": "冯思韬 (OverDustD7)",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "cordis-plugin",
+    "dsh-bundle",
+    "memory",
+    "experience-recall",
+    "context-injection",
+    "local-llm",
+    "ollama"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "compatibility": {
+      "dsh": ">=0.1.5-rc.1"
+    }
+  }
+}
