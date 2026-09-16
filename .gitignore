@@ -1,0 +1,16 @@
+# Runtime state: the observation log grows to tens of MB, and the card cache is a
+# derived index that contains excerpts of the author's memory store.
+logs/
+cache/
+
+# Scratch DSH home used by ad-hoc tests (they normally use %TEMP%).
+.dsh-test/
+
+# Packing artifacts
+*.tgz
+*.tar.gz
+
+# Tooling
+node_modules/
+.DS_Store
+Thumbs.db
