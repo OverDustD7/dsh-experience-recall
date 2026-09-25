@@ -93,16 +93,8 @@ dsh plugin --profile web add link:/path/to/dsh-experience-recall
 ```yaml
 - id: experience-recall
   config:
-    # 状态目录（默认 $DSH_HOME/dsh-experience-recall）
-    # stateDir: '~/dsh-experience-recall'
-    # 关闭全部注入，继续观察：
-    # maxInjectionsPerTurn: 0
-    # 仅关闭 CLI 检索（索引卡仍可能注入）：
-    # mnemonCliPath: ''
-    # localModel: 'qwen3.5:9b'
-    # minScore: 0.35              # 防垃圾下限，不是判别器
-    # maxInjectionsPerTurn: 3
-    # verifyEnabled: false        # 不判定直接插（不建议）
+    maxInjectionsPerTurn: 0     # 继续观察，什么都不插
+    localModel: 'qwen3.5:9b'
 ```
 
 | 键 | 默认 | 含义 |

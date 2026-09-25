@@ -122,7 +122,11 @@ test('card builder uses the model when it answers and degrades to mechanical whe
   })
   const fromModel = await good.build(MEMORY, 'r1')
   assert.equal(fromModel.source, 'local-model')
-  assert.deepEqual(fromModel.terms, ['zhjwxk', 'kylsearch'])
+  // The author's own tags/entities come first, then the model's picks (see the
+  // concept-word test below); both halves must be present.
+  assert.ok(fromModel.terms.includes('zhjwxk'))
+  assert.ok(fromModel.terms.includes('kylsearch'))
+  assert.deepEqual(fromModel.terms.slice(-2), ['zhjwxk', 'kylsearch'], 'model picks keep their order after the author terms')
   const cached = await good.build(MEMORY, 'r1')
   assert.equal(cached.source, 'local-model')
   assert.equal(good.stats().cacheHits, 1)
@@ -140,6 +144,72 @@ test('card builder uses the model when it answers and degrades to mechanical whe
 
   const mechanical = createCardBuilder({ config: { cardBuilder: 'mechanical' } })
   assert.equal((await mechanical.build(MEMORY, 'r1')).source, 'mechanical')
+})
+
+test('a memory with nothing transferable yields no card at all', async () => {
+  // The card prompt asks for the portable lesson and allows an empty one: a pure
+  // progress log ("spent ¥4.39 over 135 steps") has nothing another project can use.
+  // Such a memory must contribute no card and no terms, so it can never trigger.
+  const builder = createCardBuilder({
+    config: { cardBuilder: 'local', localModel: 'test-model', localEndpoint: 'http://x' },
+    fetchImpl: fakeFetch({ response: '{"terms":["135 步"],"card":"","scope":"private"}' }),
+  })
+  const built = await builder.build(MEMORY, 'r1')
+  assert.equal(built, undefined, 'nothing transferable means no card')
+  assert.equal(builder.stats().privateSkipped, 1)
+  assert.equal(builder.has('m1'), false, 'and nothing may be cached for it')
+})
+
+test('an empty card field is a valid answer, a missing one is a failure', async () => {
+  const intentional = await askLocalModel({ model: 'test-model', content: 'x', fetchImpl: fakeFetch({ response: '{"terms":[],"card":"","scope":"private"}' }) })
+  assert.equal(intentional.ok, true)
+  assert.equal(intentional.scope, 'private')
+
+  const missing = await askLocalModel({ model: 'test-model', content: 'x', fetchImpl: fakeFetch({ response: '{"terms":["a"]}' }) })
+  assert.equal(missing.ok, false)
+  assert.match(String(missing.error), /empty card/)
+})
+
+test('a transient model failure reuses the previous good card instead of degrading it', async () => {
+  // Measured 2026-09-19: a re-annotation pass under model contention failed with
+  // HTTP 500 and cached *mechanical* fallbacks over cards the model had built.
+  let mode = 'ok'
+  const builder = createCardBuilder({
+    config: { cardBuilder: 'local', localModel: 'test-model', localEndpoint: 'http://x' },
+    fetchImpl: async () => {
+      if (mode === 'fail') return { ok: false, status: 500, json: async () => ({}) }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ response: '{"terms":["zhjwxk"],"card":"GBK 响应要显式解码。","scope":"portable"}' }),
+      }
+    },
+  })
+  const good = await builder.build(MEMORY, 'r1')
+  assert.equal(good.source, 'local-model')
+
+  // Same memory, new revision (e.g. the store row changed), model now unreachable.
+  mode = 'fail'
+  const afterFailure = await builder.build(MEMORY, 'r2')
+  assert.equal(afterFailure.source, 'local-model', 'the good card must survive a transient failure')
+  assert.equal(afterFailure.card, good.card)
+  assert.equal(afterFailure.reusedFrom, good.key)
+  assert.equal(builder.stats().reusedOnFailure, 1)
+})
+
+test('the author tags/entities outrank the model picks, so a concept word can be pinned', async () => {
+  // Measured 2026-09-20: the style memory carried the terms of the context it was
+  // written in (`问卷`/`自述`) instead of the concept (`说话风格`/`口吻`), so it never
+  // fired when the user talked about their tone. Author terms must survive the model.
+  const record = { id: 'style', content: '语气保持书面但不官腔', tags: ['说话风格'], entities: ['口吻', '语气'] }
+  const builder = createCardBuilder({
+    config: { cardBuilder: 'local', localModel: 'test-model', localEndpoint: 'http://x' },
+    fetchImpl: fakeFetch({ response: '{"terms":["书面语","第一人称"],"card":"书面但不官腔。","scope":"portable"}' }),
+  })
+  const built = await builder.build(record, 'r1')
+  assert.ok(built.terms.includes('口吻'), `author entity must survive: ${built.terms.join('/')}`)
+  assert.ok(built.terms.includes('说话风格'))
+  assert.ok(built.terms.includes('书面语'), 'the model picks still contribute')
 })
 
 // ----------------------------------------------------------------- table ---

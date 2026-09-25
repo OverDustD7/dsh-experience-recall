@@ -1,6 +1,6 @@
 {
   "name": "dsh-experience-recall",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "Cross-project experience recall for DeepSeek Harness: when the running work matches something your memory store already learned elsewhere, that lesson is injected before the next step. Runs fully locally, judged by a local small model.",
   "type": "module",
   "main": "lib/index.js",

@@ -1,10 +1,6 @@
-# Bilingual-pair consistency record (the same convention DSH uses for its own docs):
-# the git blob hash of each side as of the last confirmed-consistent state. Both
-# languages carry equal authority. After editing either side, bring the other along
-# and re-record it with:
-#
-#   git hash-object README.md README.zh.md
-#
-# A hash that no longer matches the file means the pair has drifted.
-README.md: bbccbfa340ceaee80bb10497e4e527d4a7a14852
-README.zh.md: bd5e0a3793d8f774c6b30d4bfac0ea84f941134b
+# Bilingual-pair consistency record (the convention DSH uses for its own docs):
+# the git blob hash of each side at the last confirmed-consistent state. Both
+# languages carry equal authority. After editing either side, bring the other
+# along and re-record with:  git hash-object README.md README.zh.md
+README.md: f9c823da4b139e727c06738eb0a3d0c7c7a089cc
+README.zh.md: 138cf41cbfe750ac3d468a7c40d06bc8a7a7cf6d
