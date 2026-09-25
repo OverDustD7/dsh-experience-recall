@@ -102,15 +102,8 @@ better, in your own profile patch (`$DSH_HOME/profiles/<name>/cordis.patch.yml`)
 ```yaml
 - id: experience-recall
   config:
-    # state directory (default $DSH_HOME/dsh-experience-recall)
-    # stateDir: '~/dsh-experience-recall'
-    # keep observing but disable all injections:
-    # maxInjectionsPerTurn: 0
-    # disable CLI retrieval only (indexed cards can still trigger):
-    # mnemonCliPath: ''
-    # localModel: 'qwen3.5:9b'
-    # minScore: 0.35              # a floor against garbage, not a discriminator
-    # verifyEnabled: false        # inject without judging (not recommended)
+    maxInjectionsPerTurn: 0     # keep observing, inject nothing
+    localModel: 'qwen3.5:9b'
 ```
 
 | Key | Default | Meaning |

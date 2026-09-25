@@ -33,6 +33,28 @@ test('a schema dump or a trailing separator is rejected', () => {
   assert.equal(isUsableTerm('docs/notes.md'), true)
 })
 
+test('tool-output artifacts never become trigger terms', () => {
+  // Measured 2026-09-20: a writing session injected unrelated project memories because
+  // the vocabulary held file names and filesystem attributes mined from directory
+  // listings. Shape gates and the DF filter both let them through (`readme.md`, `mtime`
+  // are short, look like proper nouns and have DF=1), and term-reputation cooldown only
+  // fires after three *rejections* — the judge accepted these. Hence rules, not a list.
+  for (const junk of ['lastwritetime', 'mtime', 'ctime', 'atime', 'readme.md', 'memory.md', 'package.json']) {
+    assert.equal(isUsableTerm(junk), false, `${junk} is a file name or attribute, not a term`)
+  }
+  for (const junk of ['since', 'start', 'temp', 'created_at', 'updated_at']) {
+    assert.equal(isUsableTerm(junk), false, `${junk} discriminates nothing`)
+  }
+  // Key=value fragments, clock times, dates and bare ratios: all rejected by rule.
+  for (const junk of ['actype=6', 'yyyy-mm-dd hh:mm', '9/14', '2026-09-17']) {
+    assert.equal(isUsableTerm(junk), false, `${junk} is a value fragment or a date`)
+  }
+  // …and the real terms this vocabulary exists for must survive every rule above.
+  for (const good of ['id.tsinghua.edu.cn', 'zhjwxk.cic.tsinghua.edu.cn', 'cordis.patch.yml', 'systemPrompt.section', 'dsh-experience-recall', 'DPAPI', '说话风格', '口吻']) {
+    assert.equal(isUsableTerm(good), true, `${good} must remain a term`)
+  }
+})
+
 test('shell, CSS and quoted-question fragments are rejected as terms', () => {
   // Real entries measured in the live cache (11 of 2506 terms).
   assert.equal(isUsableTerm('; $env:mnemon_store='), false, 'a shell fragment')
@@ -43,7 +65,11 @@ test('shell, CSS and quoted-question fragments are rejected as terms', () => {
   // Still kept: a long exact phrase is harmless (it can only match verbatim) and
   // precise when it does; only punctuation marks a fragment.
   assert.equal(isUsableTerm('maic 全ai守护的自适应课堂'), true)
-  assert.equal(isUsableTerm('qwen3.5:9b'), true, 'a colon inside a version tag is fine')
+  // A colon is now rejected outright: in practice it only marked a key=value
+  // fragment, a clock/format string (`yyyy-mm-dd hh:mm`) or a tagged version. The
+  // base name survives (`qwen3.5`), so the tagged form costs nothing.
+  assert.equal(isUsableTerm('qwen3.5:9b'), false, 'a tagged version is a value, not a term')
+  assert.equal(isUsableTerm('qwen3.5'), true, 'the base name is still a term')
 })
 
 // ---------------------------------------------------------------- cards ---

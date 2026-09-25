@@ -11,7 +11,7 @@ import { createObserver } from '../lib/observer.js'
 import { createController } from '../lib/controller.js'
 import { createVerifier } from '../lib/verify.js'
 import { createRecall } from '../lib/recall.js'
-import { createCardBuilder } from '../lib/cards.js'
+import { createCardBuilder, CARD_PROMPT_VERSION } from '../lib/cards.js'
 import { createMemoryWatch } from '../lib/memory-watch.js'
 import { buildTable, mergeTables, matchKeywords } from '../lib/keywords.js'
 import { renderInjection } from '../lib/render.js'
@@ -288,6 +288,27 @@ test('temporarily missing document bodies preserve fragment terms', async () => 
   await watch.reconcile()
   assert.equal(watch.table.stats().terms, before)
   assert.match(watch.snapshot().lastError, /unreadable document body/)
+})
+
+test('the card prompt version is part of the memory revision, so cached cards go stale instead of orphaned', async () => {
+  // The version must live where the revision is computed (memory-watch), not inside
+  // build(): `compact()` prunes cache entries whose revision nobody declares, so a
+  // version hidden in the key would make every live card look like an orphan — the
+  // shape of the 2026-09-14 cache wipe (DEV_NOTES 4.9.9).
+  const dir = await mkdtemp(join(tmpdir(), 'exp-recall-version-'))
+  const cachePath = join(dir, 'cards.json')
+  const store = { insights: async () => ({ rows: [memory('m-version', 'zhjwxk 抓取要用 TextDecoder')] }), documents: async () => ({ rows: [] }) }
+  const first = createMemoryWatch({ config: { ...config, cardCachePath: cachePath }, builder: createCardBuilder({ config: { cardBuilder: 'mechanical' }, cachePath, logger: { write: () => {} } }), store })
+  await first.reconcile()
+  const keys = Object.keys(JSON.parse(await readFile(cachePath, 'utf8')).cards)
+  assert.equal(keys.length, 1)
+  assert.ok(keys[0].startsWith(`m-version:${CARD_PROMPT_VERSION}|`), `key must carry the prompt version: ${keys[0]}`)
+
+  // A second watch over the same cache rebuilds nothing: the revision is unchanged.
+  const second = createMemoryWatch({ config: { ...config, cardCachePath: cachePath }, builder: createCardBuilder({ config: { cardBuilder: 'mechanical' }, cachePath, logger: { write: () => {} } }), store })
+  await second.reconcile()
+  assert.equal(second.snapshot().compacted, 0, 'a matching revision must not be compacted away')
+  assert.equal(Object.keys(JSON.parse(await readFile(cachePath, 'utf8')).cards).length, 1)
 })
 
 test('a newly ubiquitous term disappears from unchanged in-memory cards', async () => {
