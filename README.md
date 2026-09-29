@@ -59,6 +59,12 @@ filtered for terms that cannot discriminate anything. New memories are picked up
 | [dsh-mnemon](https://www.npmjs.com/package/dsh-mnemon) + the `mnemon` CLI | memory indexing and semantic search | without the CLI, already indexed cards can still trigger; CLI search is unavailable |
 | A local model on Ollama (`http://localhost:11434`, default `qwen3.5:9b`) | builds the cards and judges relevance | it observes and logs, but **injects nothing** — it refuses to guess |
 
+**Host compatibility.** An injected message carries a DSH v4 producer-owned source
+(`kind: "plugin:dsh-experience-recall"`, the same kind the host's own v3→v4 migration derives for a
+third-party plugin). Reading also recognises the pre-v4 `{ kind: "plugin", plugin }` wrapper, so
+injections recorded by a 0.6.x / 0.7.0 session are still treated as plugin messages — for
+visibility, de-duplication, the re-injection distance and the window scan — and never as user input.
+
 ## Install
 
 ```sh

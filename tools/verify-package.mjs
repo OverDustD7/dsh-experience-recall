@@ -83,6 +83,21 @@ try {
   walk(packed)
   console.log(`\n模拟发布包：${files} 个文件 / ${(bytes / 1024).toFixed(1)} kB（不含 npm 的 package.json 与文档元数据）\n`)
 
+  // --- 2b. no backup or scratch files ----------------------------------------
+  // `files` lists whole directories, so anything dropped beside the source travels
+  // to every installed user. Measured 2026-09-30: four `lib/*.bak` backups
+  // (59,293 B) were inside the tarball while this script printed 「发布包布局通过」.
+  const junk = []
+  const collectJunk = (dir) => {
+    for (const item of readdirSafe(dir)) {
+      const full = join(dir, item)
+      if (statSync(full).isDirectory()) collectJunk(full)
+      else if (item === '.DS_Store' || /\.(bak|orig|log)$|\.tmp-|~$/i.test(item)) junk.push(relative(packed, full))
+    }
+  }
+  collectJunk(packed)
+  check(junk.length === 0, '发布包不含备份/临时文件', junk.length === 0 ? '' : junk.join('，'))
+
   // Runtime files the plugin spawns or reads must exist in the packed layout.
   for (const rel of ['lib/index.js', 'lib/config.js', 'tools/check-relevance.mjs', 'tools/build-cards.mjs', 'cordis.patch.yml']) {
     check(existsSync(join(packed, rel)), `打包后存在 ${rel}`, '')

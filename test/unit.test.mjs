@@ -113,6 +113,8 @@ test('tool call carries name and arguments; tool result carries text and error',
 test('plugin-sourced user messages are marked, not treated as user input', () => {
   const event = { type: 'user/message', data: { role: 'user', id: 'u1', content: [{ type: 'text', text: '统一身份认证 注入块' }], source: { kind: 'plugin', plugin: 'dsh-experience-recall' } } }
   assert.equal(segmentsOfEvent(event)[0].kind, 'plugin-message')
+  const native = { ...event, data: { ...event.data, source: { kind: 'plugin:dsh-experience-recall', form: 'recall' } } }
+  assert.equal(segmentsOfEvent(native)[0].kind, 'plugin-message', 'native v4 injection is not user input')
   const user = { type: 'user/message', data: { role: 'user', id: 'u2', content: [{ type: 'text', text: '早' }], source: { kind: 'user' } } }
   assert.equal(segmentsOfEvent(user)[0].kind, 'user')
 })
