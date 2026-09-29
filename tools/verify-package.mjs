@@ -85,7 +85,7 @@ try {
 
   // --- 2b. no backup or scratch files ----------------------------------------
   // `files` lists whole directories, so anything dropped beside the source travels
-  // to every installed user. Measured 2026-09-30: four `lib/*.bak` backups
+  // to every installed user. Measured 2026-09-29: four `lib/*.bak` backups
   // (59,293 B) were inside the tarball while this script printed 「发布包布局通过」.
   const junk = []
   const collectJunk = (dir) => {
