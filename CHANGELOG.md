@@ -4,6 +4,14 @@ All notable changes to this plugin are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.2] — 2026-09-29
+
+### Fixed
+
+- **Republished with the correct release date.** `0.7.1` shipped a changelog heading and a packaging
+  comment dated `2026-09-30`; the release happened on `2026-09-29`. No code differs from `0.7.1` —
+  this version exists so the published artifact matches the repository.
+
 ## [0.7.1] — 2026-09-29
 
 ### Fixed
