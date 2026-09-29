@@ -482,7 +482,7 @@ function pluginMessageEvent(seq, id) {
   return {
     seq,
     type: 'user/message',
-    data: { id, role: 'user', source: { kind: 'plugin', plugin: 'dsh-experience-recall' }, content: [] },
+    data: { id, role: 'user', source: { kind: 'plugin:dsh-experience-recall' }, content: [] },
   }
 }
 

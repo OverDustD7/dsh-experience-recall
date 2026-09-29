@@ -137,7 +137,7 @@ function fakeSession(entries) {
 }
 
 function pluginMessageEvent(seq, id) {
-  return { seq, type: 'user/message', data: { id, role: 'user', source: { kind: 'plugin', plugin: PLUGIN_NAME }, content: [] } }
+  return { seq, type: 'user/message', data: { id, role: 'user', source: { kind: 'plugin:' + PLUGIN_NAME }, content: [] } }
 }
 
 test('surface check finds a live injection and ignores foreign or missing ones', () => {
@@ -185,7 +185,8 @@ test('same keyword triggers only once per turn and the queue drains at a boundar
   const message = controller.takeMessage({ ...meta, step: 2, sessionRef: fakeSession([]) })
   assert.ok(message !== undefined)
   assert.equal(message.role, 'user')
-  assert.equal(message.source.plugin, PLUGIN_NAME)
+  assert.equal(message.source.kind, 'plugin:' + PLUGIN_NAME)
+  assert.equal(Object.hasOwn(message.source, 'plugin'), false)
   assert.match(message.content[0].text, /经验 A 的要点/)
   assert.equal(controller.takeMessage({ ...meta, step: 3, sessionRef: fakeSession([]) }), undefined, 'one injection per boundary')
   assert.ok(records.some((record) => record.kind === 'inject' && record.cards.length === 1))
@@ -409,7 +410,8 @@ test('apply wires observer -> CLI recall -> boundary injection end to end', asyn
       const returned = await scopedHandlers.get('agent/pre-step')({ turn: 1, step: 2, messages: [{}], signal: { aborted: false } }, next)
       if (returned.messages.length <= decision.messages.length) return false
       const message = returned.messages.at(-1)
-      assert.equal(message.source.plugin, PLUGIN_NAME)
+      assert.equal(message.source.kind, 'plugin:' + PLUGIN_NAME)
+  assert.equal(Object.hasOwn(message.source, 'plugin'), false)
       assert.match(message.content[0].text, /可能相关的历史经验/)
       assert.match(message.content[0].text, /记忆 id: 11111111/)
       assert.ok(Buffer.byteLength(message.content[0].text) <= 1200)

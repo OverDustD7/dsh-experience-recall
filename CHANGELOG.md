@@ -4,6 +4,50 @@ All notable changes to this plugin are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] — 2026-09-30
+
+### Fixed
+
+- **Injected messages use the DSH v4 producer-owned source.** Harness `0.1.7-rc.2` refuses the
+  retired `{ kind: "plugin", plugin: "<name>" }` wrapper outright — `format v4 message requires a
+  producer-owned source kind` — so an injection could no longer be persisted. Messages now carry
+  `{ kind: "plugin:dsh-experience-recall", form: "recall" }`, which is exactly what the official
+  v3→v4 migration derives for a third-party plugin name (`producerKind()` in
+  `dsh-session-format-v3-to-v4`), so stored history keeps a single shape. Verified offline against
+  the shipped validator: the new shape is admitted, the retired one is refused.
+- **Both source eras stay readable.** Visibility, the same-memory de-duplication gate, the
+  re-injection distance lookup and the window scan all go through one predicate that accepts the
+  native `plugin:<name>` kind and the historical `{ kind: "plugin", plugin }` wrapper, so injections
+  written by a 0.6.x / 0.7.0 session still count as plugin messages and never as user input.
+- **Backups can no longer ship.** `package.json#files` lists whole directories, so four `lib/*.bak`
+  files (59,293 B) were travelling in the tarball while `tools/verify-package.mjs` still reported a
+  passing layout. It now fails the release when the packed tree contains a `*.bak`, `*.orig`,
+  `*.log`, `*.tmp-*` or `.DS_Store` file.
+
+### Added
+
+- `audit/_v4-source-check.mjs`: drives the real controller for one injection, runs that message
+  through the **official** v4 row admission, and checks scanning, visibility and source recognition
+  across both source eras.
+
+## [0.7.0] — 2026-09-25
+
+### Changed
+
+- **Cards are built and judged for portability instead of relevance.** A card has to keep teaching
+  something after the covering identifiers are removed; an empty card means no card, no terms and no
+  trigger at all. Author tags and entities now outrank the model's own picks, and the judge asks
+  whether an experience would still change the next step in a *different* project.
+- **Trigger terms are filtered by shape rules instead of a blocklist.** `=` and `:` are refused,
+  fewer than two letters is refused, and generic file names and filesystem/storage column names are
+  refused — 418 unusable terms dropped while every real term survived.
+
+### Fixed
+
+- A card build that fails because the local model did not answer now reuses the previous card for
+  the same id instead of caching a mechanical fallback, and the card revision carries the prompt
+  version, so bumping the prompt rebuilds cards instead of orphaning the live ones.
+
 ## [0.6.2] — 2026-09-16
 
 ### Fixed

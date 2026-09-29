@@ -53,6 +53,11 @@ session/event（思考 · 正文 · 工具参数 · 工具结果 · 报错）
 | [dsh-mnemon](https://www.npmjs.com/package/dsh-mnemon) 与 `mnemon` CLI | 记忆索引与语义检索 | 缺 CLI 时，已有索引卡仍能命中；CLI 检索不可用 |
 | 本地模型（Ollama，默认 `http://localhost:11434` 的 `qwen3.5:9b`） | 生成卡片 + 判相关性 | 会观察、会写日志，但**什么都不插**——它拒绝靠猜 |
 
+**宿主兼容性。** 注入的消息带 DSH v4 的「生产者自有来源」（`kind: "plugin:dsh-experience-recall"`，
+与宿主自己的 v3→v4 迁移为第三方插件推导出的那一种一致）；读取时同时识别 v4 之前的
+`{ kind: "plugin", plugin }` 包装。所以 0.6.x / 0.7.0 会话里记下的注入，在可见性、去重、
+再注入距离与窗口扫描里仍被当作插件消息，不会被误判成用户输入。
+
 ## 安装
 
 ```sh
