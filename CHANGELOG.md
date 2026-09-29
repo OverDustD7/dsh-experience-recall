@@ -8,9 +8,11 @@ All notable changes to this plugin are documented here. The format follows
 
 ### Fixed
 
-- **Republished with the correct release date.** `0.7.1` shipped a changelog heading and a packaging
-  comment dated `2026-09-30`; the release happened on `2026-09-29`. No code differs from `0.7.1` —
-  this version exists so the published artifact matches the repository.
+- **Republished with the correct release date.** `0.7.1` went out with a changelog heading dated
+  `2026-09-30`; the release happened on `2026-09-29`. (The repository also carried that wrong date in
+  a comment inside `tools/verify-package.mjs`, which is a development script and is not part of the
+  published package.) No code differs from `0.7.1` — this version exists so the published artifact
+  matches the repository.
 
 ## [0.7.1] — 2026-09-29
 
