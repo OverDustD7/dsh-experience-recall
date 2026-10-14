@@ -158,6 +158,7 @@ try {
       input: request,
       encoding: 'utf8',
       timeout: 30000,
+      windowsHide: true,
     })
     let parsed
     try {

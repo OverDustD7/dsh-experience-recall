@@ -107,7 +107,7 @@ async function askModel(memory) {
       prompt: `${PROMPT}${memory.content}`,
       stream: false,
       think: false,
-      options: { num_ctx: 8192, temperature: 0.2, num_predict: 400 },
+      options: { num_ctx: 32768, temperature: 0.2, num_predict: 400 },
     }),
   })
   const ms = Date.now() - started

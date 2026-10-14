@@ -4,6 +4,44 @@ All notable changes to this plugin are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] — 2026-10-14
+
+### Changed
+
+- **The context window is now 32768 everywhere this plugin talks to Ollama.** The in-session judge
+  (`tools/check-relevance.mjs`), the config default (`localNumCtx`) and the card builder's fallback were
+  4096 / 8192 / 8192. Ollama reloads a model whenever a request's `num_ctx` differs from what is loaded,
+  and the chat-digest scripts on the same machine already ask for 32768 — so alternating between the two
+  clients meant loading and evicting the 9B model on every switch. The lab scripts (`calibrate.mjs`,
+  `card-lab.mjs`, `judge-ab.mjs`, `relevance-lab.mjs`) were unified for the same reason: running one by hand
+  otherwise pays a reload. `localModel` and `localKeepAlive` are untouched.
+
+### Fixed
+
+- **No child process flashes a console window any more.** `tools/verify-package.mjs` had two `spawnSync`
+  calls, one of which (the packed-judge smoke run) passed no `windowsHide`; both are hidden now, so running
+  the release check no longer pops a black box. `lib/recall.js`, `lib/verify.js` and `tools/judge-probe.mjs`
+  already passed it. A new guard test (`test/spawn-hide.test.mjs`) scans every `spawn` / `spawnSync` /
+  `spawnImpl` call site under `lib/` and `tools/` and fails if any of them loses `windowsHide: true`.
+
+## [0.8.1] — 2026-10-14
+
+### Added
+
+- `localKeepAlive` config key (default `30m`): the judgement request and the card-building request now carry
+  Ollama's `keep_alive`, so the local small model is not evicted between two calls just because it sat idle.
+  An empty string sends no `keep_alive` at all (leave the server's `OLLAMA_KEEP_ALIVE` in charge); an
+  unparsable value falls back to the default. Defensive on machines that already export a long
+  `OLLAMA_KEEP_ALIVE` (measured no change there), decisive on machines that do not.
+
+### Docs
+
+- `DEV_NOTES.md` §4.18: the full attribution of the "judgement keeps maxing out the GPU" report — who really
+  asks for 131072 / 262144 context (the mimo and vision models' own Modelfiles, plus another client's
+  `/api/chat` traffic; this plugin's three channels asked for 4096 / 8192 / no `num_ctx` at the time, later
+  unified to 32768 in 0.8.2), what the
+  eviction predictions were, and why the plugin was the victim rather than the cause.
+
 ## [0.8.0] — 2026-10-14
 
 ### Added
