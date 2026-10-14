@@ -1,6 +1,6 @@
 {
   "name": "dsh-experience-recall",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "description": "Cross-project experience recall for DeepSeek Harness: when the running work matches something your memory store already learned elsewhere, that lesson is injected before the next step. Runs fully locally, judged by a local small model.",
   "type": "module",
   "main": "lib/index.js",
@@ -25,7 +25,7 @@
   },
   "scripts": {
     "test": "node --test",
-    "check": "node --check lib/index.js && node --check lib/observer.js && node --check lib/scan.js && node --check lib/keywords.js && node --check lib/log.js && node --check lib/config.js && node --check lib/recall.js && node --check lib/controller.js && node --check lib/render.js && node --check lib/surface.js && node --check lib/terms.js && node --check lib/table.js && node --check lib/cards.js && node --check lib/mnemon-store.js && node --check lib/memory-watch.js && node --check lib/verify.js",
+    "check": "node --check lib/index.js && node --check lib/observer.js && node --check lib/scan.js && node --check lib/keywords.js && node --check lib/log.js && node --check lib/config.js && node --check lib/recall.js && node --check lib/controller.js && node --check lib/render.js && node --check lib/surface.js && node --check lib/terms.js && node --check lib/table.js && node --check lib/cards.js && node --check lib/mnemon-store.js && node --check lib/memory-watch.js && node --check lib/verify.js && node --check lib/models.js && node --check lib/model-command.js",
     "prepack": "npm run check && npm test"
   },
   "repository": {

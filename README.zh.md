@@ -90,6 +90,22 @@ dsh plugin --profile web add link:/path/to/dsh-experience-recall
 
 刚装好请先干几分钟活：首次启动会用本地模型给每条记忆建一张卡（几百条记忆约 5 分钟），建完之前词表很薄。
 
+## 换本地小模型
+
+`/experience-recall model`（不带参数）会问一次本机 Ollama 装了哪些对话模型，弹出一张选择卡——当前在用的
+排第一，其余按体积从小到大；向量模型（`bge-m3` 这类）不会被列出来。选中即生效：判定器与建卡器都是**每次
+调用现读**这个值，下一条记忆就用新模型，**不用重启**；同时会写回你的 profile 覆盖层，所以重启后仍然是它。
+
+```
+/experience-recall model                    # 列出本机模型并选择
+/experience-recall model qwen3.6:35b-a3b    # 直接切到它，不弹卡
+/experience-recall help                     # 子命令说明
+```
+
+不想用卡片、或者 Ollama 没在跑的时候，直接用带名字的那条。名字写错也不会坏：本机没装时命令会明确告诉你
+「本机 Ollama 里没看到它，判定会失败、卡片退回机械兜底」。已经建好的卡片沿用旧模型的结果——换模型只影响
+之后新建或重建的卡。
+
 ## 配置
 
 全部可选，写在行的 `config` 里——可以改包内的 `cordis.patch.yml`，但更推荐写在**你自己的 profile 覆盖层**
@@ -109,7 +125,8 @@ dsh plugin --profile web add link:/path/to/dsh-experience-recall
 | `logPath` / `cardCachePath` | 在 `stateDir` 下 | 可单独覆盖；`cardCachePath: ''` 表示不要缓存 |
 | `mnemonCliPath` | `$MNEMON_CLI_PATH` | `mnemon` CLI；`''` 仅关闭 CLI 检索 |
 | `mnemonDataDir` / `mnemonStore` | `$MNEMON_DATA_DIR` 或 `$DSH_HOME/mnemon` / `$MNEMON_STORE` 或 `default` | 索引读取与 CLI 共用；未设 `DSH_HOME` 时使用 `~/.dsh` |
-| `localModel` / `localEndpoint` | `qwen3.5:9b` / `http://localhost:11434` | 卡片生成 + 相关性判定 |
+| `localModel` / `localEndpoint` | `qwen3.5:9b` / `http://localhost:11434` | 卡片生成 + 相关性判定（`/experience-recall model` 改的就是它） |
+| `modelListTimeoutMs` / `modelPickTimeoutMs` | `5000` / `300000` | 取本机模型列表的超时；选择卡等待用户选择的超时 |
 | `cardBuilder` | `local` | 设 `mechanical` 则建卡不用模型 |
 | `minScore` | `0.35` | 检索分数下限 |
 | `maxInjectionsPerTurn` / `maxCardsPerInjection` / `maxInjectBytes` | `3` / `2` / `1200` | 注入预算 |
@@ -156,6 +173,7 @@ dsh plugin --profile web remove dsh-experience-recall
 | 路径 | 里面是什么 |
 |---|---|
 | `lib/index.js` | 接线：按 agent 订阅 `session/event` 与 `agent/pre-step`、`/experience-recall` 命令、恒定系统提示段、token-meter |
+| `lib/models.js` · `lib/model-command.js` | `/experience-recall model`：取本机模型列表、排成选项、切模型并写回 profile（不依赖宿主 API，可离线测） |
 | `lib/observer.js` · `lib/scan.js` | 把会话事件转成可扫描的文本段 |
 | `lib/keywords.js` · `lib/table.js` · `lib/terms.js` | 词表：机械匹配、活词表、专名抽取与词形闸门 |
 | `lib/cards.js` | 建卡（本地模型 + 机械兜底 + 文档切片）并负责磁盘缓存 |
@@ -164,13 +182,13 @@ dsh plugin --profile web remove dsh-experience-recall
 | `lib/verify.js` · `tools/check-relevance.mjs` | 第二级相关性判定（串行、超时重试、未答退避） |
 | `lib/controller.js` · `lib/render.js` · `lib/surface.js` | 闸门、队列与注入边界；渲染；可见性判据 |
 | `tools/` | CLI 工具：`check-install`、`build-cards`、`term-audit`、`verdict-report`、`judge-probe`、`verify-package`，以及本地评测脚本 |
-| `test/` | 124 项测试，跑在 node 自带 runner 上 |
+| `test/` | 145 项测试，跑在 node 自带 runner 上 |
 
 命令（不需要 install：插件没有依赖）：
 
 ```sh
 npm run check                            # 全部运行时模块语法检查
-npm test                                 # 124 项单元测试，不联网
+npm test                                 # 145 项单元测试，不联网
 node tools/check-install.mjs             # 装机自检
 node tools/verify-package.mjs            # 按 files 模拟发布包并体检
 node tools/verdict-report.mjs            # 运行数据：来源通过率、分数分布、判定健康度

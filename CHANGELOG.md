@@ -4,6 +4,39 @@ All notable changes to this plugin are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] — 2026-10-14
+
+### Added
+
+- **`/experience-recall model` — switch the local small model from inside the session.** With no argument the
+  command asks the local Ollama (`GET /api/tags`) what chat models are installed and shows a question card:
+  the model in use first, the rest sorted smallest-first, embedding models (`bge-m3` and friends, recognised
+  by family) never offered, and the list capped at 20 with the remainder stated on the card. With an argument
+  (`/experience-recall model qwen3.6:35b-a3b`) it switches straight to that name and skips the card. The
+  switch is applied live and then written into this plugin's own loader entry through
+  `ctx.configEditor.edit`, so it survives a restart; a failed write is reported instead of swallowed ("takes
+  effect now, not persisted"), and a name that is not installed (or an Ollama that cannot be reached) is
+  called out while still being written.
+- `lib/models.js` — install listing (`GET /api/tags`, HTTP error, unreachable endpoint and timeout all become
+  a value, never a throw), embedding detection, byte/detail formatting, and the option ranking.
+- `lib/model-command.js` — parsing (`status` / `help` / `model` / `model <name>`), the command itself with
+  every host effect injected (config read, live write, listing, question card, profile write, observation
+  log), so all of its decisions are testable offline.
+- `modelListTimeoutMs` (5000) and `modelPickTimeoutMs` (300000): the listing timeout, and how long the picker
+  card waits for the human before it gives up.
+- 15 tests (the suite goes 130 → 145): `test/model-command.test.mjs` covers parsing, ranking, the embedding
+  filter, an unreachable Ollama, a missing model, a refused write and both answer paths;
+  `test/verify.test.mjs` pins that a model switched after startup reaches the next judgement.
+
+### Fixed
+
+- **Switching the model now actually reaches the judge.** `lib/verify.js` captured `config.localModel` when
+  the verifier was created, so a model changed at runtime kept being ignored for the life of the process; it
+  is now read per call, which is what the command's "no restart needed" promise depends on. `lib/cards.js`
+  already read it per build, so cards follow immediately as well.
+- The plugin's own `package.json#check` now syntax-checks `lib/models.js` and `lib/model-command.js` too —
+  the two files a release would otherwise ship unparsed.
+
 ## [0.7.2] — 2026-09-29
 
 ### Fixed
