@@ -99,7 +99,9 @@ test('the status command registers directly when the service is already there', 
     apply(ctx, { logPath: join(dir, 'observe.ndjson'), ...hermetic(join(dir, 'missing')) })
     assert.equal(registrations.length, 1)
     assert.equal(registrations[0].name, 'experience-recall')
-    const result = registrations[0].handler({ rawInput: '' })
+    // The handler is async now that `/experience-recall model` shares it; the
+    // host accepts a promise (`CommandResult | Promise<CommandResult>`).
+    const result = await registrations[0].handler({ rawInput: '' })
     assert.equal(result.kind, 'success')
     assert.match(result.text, /经验召回/)
   } finally {

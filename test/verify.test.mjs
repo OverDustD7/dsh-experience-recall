@@ -486,6 +486,27 @@ function pluginMessageEvent(seq, id) {
   }
 }
 
+test('a model switched after creation reaches the next judgement', async () => {
+  // `/experience-recall model` mutates the resolved config in place, so a captured
+  // `config.localModel` would keep judging with the model the process started on.
+  const children = []
+  const config = { verifyEnabled: true, verifyTimeoutMs: 2000, verifyContextChars: 700, localModel: 'qwen3.5:9b' }
+  const verifier = createVerifier({
+    config,
+    logger: { write: () => {} },
+    spawnImpl: (command, args) => {
+      const child = fakeChild(() => ({ stdout: JSON.stringify({ useful: true, why: 'ok', ms: 1 }) }))
+      children.push({ command, args, child })
+      return child
+    },
+  })
+  await verifier.verify('在写抓取脚本', '卡片：GBK 要用 TextDecoder')
+  assert.equal(JSON.parse(children[0].child.stdinData).model, 'qwen3.5:9b')
+  config.localModel = 'qwen3.8:27b-ud-q3_K_XL'
+  await verifier.verify('在写抓取脚本', '卡片：GBK 要用 TextDecoder')
+  assert.equal(JSON.parse(children[1].child.stdinData).model, 'qwen3.8:27b-ud-q3_K_XL', 'the switch must reach the judge without a restart')
+})
+
 function fakeSession(entries) {
   const nodes = entries.map((entry) => entry.seq)
   const bySeq = new Map(entries.map((entry) => [entry.seq, entry]))

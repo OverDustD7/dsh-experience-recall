@@ -100,6 +100,25 @@ not add it by hand as well, or the loader fails with `duplicate loader entry id`
 Give it a few minutes of real work first: on a fresh install the first start builds one card per memory
 with the local model (a few hundred memories ≈ 5 minutes), and the vocabulary is thin until that finishes.
 
+## Switching the local small model
+
+`/experience-recall model` (no argument) asks the local Ollama what chat models are installed and shows a
+picker card — the one in use comes first, the rest sorted smallest-first; embedding models such as `bge-m3`
+are never offered. The choice applies immediately: the judge and the card builder both read the value **per
+call**, so the next memory uses the new model with **no restart**, and the value is also written back to your
+profile patch so the next restart keeps it.
+
+```
+/experience-recall model                    # list the local models and pick one
+/experience-recall model qwen3.6:35b-a3b    # switch straight to it, no card
+/experience-recall help                     # subcommand help
+```
+
+Use the named form when you would rather skip the card or Ollama is not running. A wrong name is safe: if the
+model is not installed the command says so ("not installed — the judge will fail and cards fall back to the
+mechanical builder"). Cards already built keep the previous model's wording — switching only affects cards
+built or rebuilt afterwards.
+
 ## Configuration
 
 Everything is optional and lives in the row's `config` — either in the package's `cordis.patch.yml` or,
@@ -119,7 +138,8 @@ better, in your own profile patch (`$DSH_HOME/profiles/<name>/cordis.patch.yml`)
 | `logPath` / `cardCachePath` | under `stateDir` | override individually; `cardCachePath: ''` disables the cache |
 | `mnemonCliPath` | `$MNEMON_CLI_PATH` | the `mnemon` CLI; `''` disables CLI retrieval only |
 | `mnemonDataDir` / `mnemonStore` | `$MNEMON_DATA_DIR` or `$DSH_HOME/mnemon` / `$MNEMON_STORE` or `default` | shared by the index reader and the CLI; unset `DSH_HOME` uses `~/.dsh` |
-| `localModel` / `localEndpoint` | `qwen3.5:9b` / `http://localhost:11434` | card builder + relevance judge |
+| `localModel` / `localEndpoint` | `qwen3.5:9b` / `http://localhost:11434` | card builder + relevance judge (this is what `/experience-recall model` changes) |
+| `modelListTimeoutMs` / `modelPickTimeoutMs` | `5000` / `300000` | timeout for fetching the installed-model list; how long the picker card waits for the human |
 | `cardBuilder` | `local` | `mechanical` skips the model when building cards |
 | `minScore` | `0.35` | retrieval score floor |
 | `maxInjectionsPerTurn` / `maxCardsPerInjection` / `maxInjectBytes` | `3` / `2` / `1200` | injection budget |
@@ -168,6 +188,7 @@ Layout:
 | Path | What is in it |
 |---|---|
 | `lib/index.js` | wiring: per-agent subscriptions to `session/event` and `agent/pre-step`, the `/experience-recall` command, the constant system-prompt section, the token meter |
+| `lib/models.js` · `lib/model-command.js` | `/experience-recall model`: list the local models, rank them into options, switch and write the profile back (no host API, so it tests offline) |
 | `lib/observer.js` · `lib/scan.js` | turn session events into scannable text segments |
 | `lib/keywords.js` · `lib/table.js` · `lib/terms.js` | the vocabulary: matching, the live term table, term extraction and shape gates |
 | `lib/cards.js` | builds cards (local model + mechanical fallback + document fragments) and owns the disk cache |
@@ -176,13 +197,13 @@ Layout:
 | `lib/verify.js` · `tools/check-relevance.mjs` | the second-stage relevance judge (serialized, retried, backed off) |
 | `lib/controller.js` · `lib/render.js` · `lib/surface.js` | gates, queue, injection boundary; rendering; visibility checks |
 | `tools/` | CLI tools: `check-install`, `build-cards`, `term-audit`, `verdict-report`, `judge-probe`, `verify-package`, and the local evaluation harness |
-| `test/` | 124 tests on node's built-in runner |
+| `test/` | 145 tests on node's built-in runner |
 
 Commands (no install step is needed — the plugin has no dependencies):
 
 ```sh
 npm run check                            # syntax check every runtime module
-npm test                                 # 124 unit tests, no network
+npm test                                 # 145 unit tests, no network
 node tools/check-install.mjs             # installation self-check
 node tools/verify-package.mjs            # simulate the published package from `files`
 node tools/verdict-report.mjs            # runtime data: sources, scores, judge health
