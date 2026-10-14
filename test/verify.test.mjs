@@ -53,7 +53,24 @@ test('the verifier reports a useful judgement and passes the request on stdin', 
   assert.equal(payload.context, '正在写抓取脚本')
   assert.match(payload.card, /TextDecoder/)
   assert.ok(payload.timeoutMs <= 2000)
+  assert.equal('keepAlive' in payload, false, 'nothing is sent that was not configured')
   assert.equal(verifier.stats().accepted, 1)
+})
+
+test('a configured keep_alive rides along, and a blank one is not sent', async () => {
+  const pinned = verifierWith(
+    () => ({ stdout: JSON.stringify({ useful: true, why: '给出具体参数', ms: 9 }) }),
+    { localKeepAlive: '30m' },
+  )
+  await pinned.verifier.verify('正在读 Ollama 的日志', '卡片：keep_alive 决定模型驻留多久')
+  assert.equal(JSON.parse(pinned.children[0].child.stdinData).keepAlive, '30m')
+
+  const blank = verifierWith(
+    () => ({ stdout: JSON.stringify({ useful: true, why: '给出具体参数', ms: 9 }) }),
+    { localKeepAlive: '   ' },
+  )
+  await blank.verifier.verify('再看一次', '卡片：空白就不发这一项')
+  assert.equal('keepAlive' in JSON.parse(blank.children[0].child.stdinData), false)
 })
 
 test('the judge can report that the window had nothing readable', async () => {

@@ -36,4 +36,13 @@ test('a relative path still resolves against the plugin root, and empty disables
   assert.equal(resolveConfig({ cardCachePath: '' }).cardCachePath, '', 'an explicit empty string means no cache')
   // Absent (not empty) falls back to the state dir, so a missing key never means "disabled".
   assert.match(resolveConfig({}).cardCachePath, /cache[\\/]cards\.json$/)
+  // keep_alive: a duration or a bare number of seconds, an empty string to send
+  // nothing, and anything unreadable falls back to the default instead of reaching
+  // Ollama as a malformed value.
+  assert.equal(resolveConfig({}).localKeepAlive, '30m')
+  assert.equal(resolveConfig({ localKeepAlive: '24h' }).localKeepAlive, '24h')
+  assert.equal(resolveConfig({ localKeepAlive: '-1' }).localKeepAlive, '-1')
+  assert.equal(resolveConfig({ localKeepAlive: ' 5m ' }).localKeepAlive, '5m')
+  assert.equal(resolveConfig({ localKeepAlive: '' }).localKeepAlive, '')
+  assert.equal(resolveConfig({ localKeepAlive: 'forever' }).localKeepAlive, '30m')
 })

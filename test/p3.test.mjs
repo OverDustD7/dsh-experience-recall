@@ -90,6 +90,17 @@ function fakeFetch(payload, { status = 200 } = {}) {
   return impl
 }
 
+test('the local model request pins keep_alive when one is configured', async () => {
+  const pinned = fakeFetch({ response: '{"terms":[],"card":"x"}' })
+  await askLocalModel({ model: 'test-model', content: 'x', keepAlive: '30m', fetchImpl: pinned })
+  assert.equal(pinned.calls[0].body.keep_alive, '30m')
+  assert.equal(pinned.calls[0].body.options.num_ctx, 32768)
+
+  const blank = fakeFetch({ response: '{"terms":[],"card":"x"}' })
+  await askLocalModel({ model: 'test-model', content: 'x', keepAlive: '   ', fetchImpl: blank })
+  assert.equal('keep_alive' in blank.calls[0].body, false, 'a blank keep_alive must not be sent')
+})
+
 test('local model output is parsed, trimmed to budget, and reports failures without throwing', async () => {
   const ok = await askLocalModel({
     model: 'test-model',

@@ -97,7 +97,13 @@ async function main() {
         prompt: `${PROMPT}${context}\n\n历史经验卡片：\n${card}\n`,
         stream: false,
         think: false,
-        options: { num_ctx: 4096, temperature: 0, num_predict: 80 },
+        // The judge model must stay resident: without this Ollama unloads it after
+        // five idle minutes and the next judgement pays a cold load again (measured
+        // 2026-10-14, see lib/verify.js `keepAlive`).
+        ...(typeof request?.keepAlive === 'string' && request.keepAlive.trim() !== ''
+          ? { keep_alive: request.keepAlive.trim() }
+          : {}),
+        options: { num_ctx: 32768, temperature: 0, num_predict: 80 },
       }),
     })
     if (!response.ok) {
