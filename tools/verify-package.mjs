@@ -47,7 +47,7 @@ for (const pattern of pkg.files ?? []) {
   if (statSync(target).isDirectory()) entries.push({ pattern, dir: true, target })
   else entries.push({ pattern, dir: false, target })
 }
-const required = ['lib', 'tools/check-relevance.mjs', 'tools/build-cards.mjs', 'tools/check-install.mjs', 'cordis.patch.yml', 'README.md', 'LICENSE']
+const required = ['lib/index.js', 'lib/config.js', 'tools/check-relevance.mjs', 'tools/build-cards.mjs', 'tools/check-install.mjs', 'cordis.patch.yml', 'README.md', 'LICENSE']
 for (const name of required) {
   check(
     (pkg.files ?? []).includes(name),
@@ -84,7 +84,7 @@ try {
   console.log(`\n模拟发布包：${files} 个文件 / ${(bytes / 1024).toFixed(1)} kB（不含 npm 的 package.json 与文档元数据）\n`)
 
   // --- 2b. no backup or scratch files ----------------------------------------
-  // `files` lists whole directories, so anything dropped beside the source travels
+  // Check the simulated layout for unexpected backup or scratch files before shipping
   // to every installed user. Measured 2026-09-29: four `lib/*.bak` backups
   // (59,293 B) were inside the tarball while this script printed 「发布包布局通过」.
   const junk = []

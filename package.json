@@ -1,7 +1,7 @@
 {
   "name": "dsh-experience-recall",
-  "version": "0.8.2",
-  "description": "Cross-project experience recall for DeepSeek Harness: when the running work matches something your memory store already learned elsewhere, that lesson is injected before the next step. Runs fully locally, judged by a local small model.",
+  "version": "0.8.4",
+  "description": "Cross-project experience recall for DeepSeek Harness. Retrieves relevant lessons before the next step and uses a local relevance model by default.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -9,7 +9,24 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "lib",
+    "lib/cards.js",
+    "lib/config.js",
+    "lib/controller.js",
+    "lib/index.js",
+    "lib/keywords.js",
+    "lib/log.js",
+    "lib/memory-watch.js",
+    "lib/mnemon-store.js",
+    "lib/model-command.js",
+    "lib/models.js",
+    "lib/observer.js",
+    "lib/recall.js",
+    "lib/render.js",
+    "lib/scan.js",
+    "lib/surface.js",
+    "lib/table.js",
+    "lib/terms.js",
+    "lib/verify.js",
     "tools/check-relevance.mjs",
     "tools/build-cards.mjs",
     "tools/check-install.mjs",
@@ -17,7 +34,8 @@
     "README.md",
     "README.zh.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "README.i18n.yaml"
   ],
   "engines": {
     "node": ">=22.5",

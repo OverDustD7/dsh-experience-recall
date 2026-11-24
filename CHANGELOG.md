@@ -4,6 +4,17 @@ All notable changes to this plugin are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.4] — Unreleased
+
+### Fixed
+
+- Replace the previous README injection excerpt with a fictional example and remove local paths from distributed source comments.
+- Describe state files, profile writes and configured endpoints in both READMEs. Correct the Node.js SQLite flag requirements.
+
+### Packaging
+
+- List the shipped runtime modules explicitly so unrelated files in the source directory cannot enter the npm package.
+
 ## [0.8.2] — 2026-10-14
 
 ### Changed

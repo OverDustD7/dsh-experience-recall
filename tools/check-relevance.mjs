@@ -23,7 +23,8 @@ function argOf(name, fallback) {
   const index = args.indexOf(name)
   return index === -1 ? fallback : args[index + 1]
 }
-const defaultModel = argOf('--model', 'qwen3.5:9b')
+// 2026-10-14：默认从 qwen3.5:9b 换成 MiMo（qwen3.5:9b 已从本机删除）。
+const defaultModel = argOf('--model', 'mimo-v2.6:9b-q6_K')
 const endpoint = argOf('--endpoint', 'http://localhost:11434')
 
 const PROMPT = `你在为「跨项目经验召回」做最后一道相关性检查。经验来自别的项目，要判断它能不能搬到眼前这件事上。

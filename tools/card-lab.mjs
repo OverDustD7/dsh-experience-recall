@@ -61,7 +61,8 @@ if (args.includes('--review')) {
 }
 
 const limit = Number(argOf('--limit', '3'))
-const model = argOf('--model', 'qwen3.5:9b')
+// 2026-10-14：默认从 qwen3.5:9b 换成 MiMo（qwen3.5:9b 已从本机删除）。
+const model = argOf('--model', 'mimo-v2.6:9b-q6_K')
 const orderBy = argOf('--by', 'importance')
 const dbPath = argOf('--db', join(homedir(), '.dsh', 'mnemon', 'data', 'default', 'mnemon.db'))
 const endpoint = argOf('--endpoint', 'http://localhost:11434')
